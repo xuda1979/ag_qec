@@ -19,7 +19,7 @@
 % --- Macros / formatting helpers ---
 \newcommand{\ie}{i.e.,\ }
 \newcommand{\eg}{e.g.,\ }
-\newcommand{\etal}{\emph{et al.}}
+\newcommand{\etal}{et al.}
 \newcommand{\KL}{\mathrm{D}}
 \sisetup{detect-all=true}
 
@@ -42,18 +42,18 @@
 \maketitle
 
 \begin{abstract}
-Hollow-core fibers (HCFs) provide ultra-low nonlinearity and latency for next-generation mobile backhaul. In co-propagation, however, intense classical channels induce noise---notably spontaneous Raman scattering (SpRS) and four-wave mixing (FWM)---that degrades quantum links over long spans. We propose an \emph{algebraic-geometry-inspired} quantum error-correcting code (QECC) tailored to entanglement distribution over a \SI{100}{\kilo\meter} HCF carrying a \SI{10}{\dBm} classical channel. Our design is a high-rate CSS stabilizer code derived from algebraic-geometry (AG) codes, paired with a fully pipelined belief-propagation decoder architecture (\emph{DABP}) amenable to FPGA deployment. We introduce a physics-driven noise model that captures asymmetric and temporally correlated Pauli errors. To evaluate the code's potential, idealized simulations using an upper-bound Bounded Distance Decoding (BDD) model indicate that our AG code can achieve entanglement fidelity \(F_e \approx 0.9990\) at a practical code rate, outperforming baselines. The proposed DABP architecture is estimated to achieve sub-\SI{1}{\micro\second} latency, with resource estimates on a Xilinx Kintex UltraScale (XCKU040) suggesting \(\approx\)\SI{2.1}{\watt} power consumption at \SI{200}{\mega\hertz}. These results highlight a practical path for robust, low-latency quantum key distribution over HCF backhaul.
+Hollow-core fibers (HCFs) provide ultra-low nonlinearity and latency for next-generation mobile backhaul. In co-propagation, however, intense classical channels induce noise---notably spontaneous Raman scattering (SpRS) and four-wave mixing (FWM)---that degrades quantum links over long spans. We propose an \emph{algebraic-geometry-inspired} quantum error-correcting code (QECC) tailored to entanglement distribution over a \SI{100}{\kilo\meter} HCF carrying a \SI{10}{\dBm} classical channel. Our design is a high-rate CSS stabilizer code derived from algebraic-geometry (AG) codes, paired with a fully pipelined Belief Propagation (BP) decoder architecture (\emph{DABP}) amenable to FPGA deployment. We introduce a physics-driven noise model that captures asymmetric and temporally correlated Pauli errors arising from these nonlinear effects. To evaluate the code's potential, idealized simulations using an upper-bound Bounded Distance Decoding (BDD) model indicate that our AG code can achieve entanglement fidelity \(F_e \approx 0.9990\) at a practical code rate, outperforming baselines. The proposed DABP architecture is estimated to achieve sub-\SI{1}{\micro\second} latency, with resource estimates on a Xilinx Kintex UltraScale (XCKU040) suggesting \(\approx\)\SI{2.1}{\watt} power consumption at \SI{200}{\mega\hertz}. These results highlight a practical path for robust, low-latency quantum key distribution over HCF backhaul.
 \end{abstract}
 
 \section{Introduction}
-Hollow-core optical fibers (HCFs), which guide light in an air-filled core with microstructured cladding, have achieved loss levels rivalling standard silica fibers while offering orders-of-magnitude lower nonlinearity and group delay. This makes HCFs attractive for \emph{mobile backhaul} in quantum-secured networks. A persistent challenge is that residual nonlinear processes driven by high-power classical channels---notably spontaneous Raman scattering (SpRS) and four-wave mixing (FWM)---can introduce substantial noise into coexisting quantum channels over \SIrange{50}{100}{\kilo\meter} and beyond.
+Hollow-core optical fibers (HCFs), which guide light in an air-filled core with microstructured cladding, have achieved loss levels rivaling standard silica fibers while offering orders-of-magnitude lower nonlinearity and group delay. This makes HCFs attractive for \emph{mobile backhaul} in quantum-secured networks. A persistent challenge is that residual nonlinear processes driven by high-power classical channels---notably spontaneous Raman scattering (SpRS) and four-wave mixing (FWM)---can introduce substantial noise into coexisting quantum channels over \SIrange{50}{100}{\kilo\meter} and beyond.
 
 Quantum error correction (QEC) is a natural tool to mitigate such physical errors. The surface code offers high thresholds but very low rate; quantum LDPC (QLDPC) codes provide higher rates, but decoder complexity and finite-length behavior remain active topics.
 
 \textbf{This work.} We develop a CSS code inspired by \emph{algebraic-geometry (AG)} codes and a hardware-oriented decoder for HCF coexistence. Our main contributions are:
 \begin{enumerate}[leftmargin=*,itemsep=1pt,topsep=2pt]
   \item \textbf{Code construction:} A length-\(n=255\) AG-inspired CSS code with parameters \( [[255,\,33,\,21]] \) (rate \(R\approx0.129\)).
-  \item \textbf{Decoder architecture:} A deeply pipelined, fully parallel belief-propagation decoder (\emph{DABP}) using 6-bit LLRs, designed for FPGA.
+  \item \textbf{Decoder architecture:} A deeply pipelined, fully parallel BP decoder (the \emph{DABP} architecture) using 6-bit LLRs, designed for FPGA.
   \item \textbf{Realistic noise model:} A physics-driven model capturing \(p_Z\!>\!p_X\) asymmetry from SpRS/FWM and first-order temporal correlations, implemented in the accompanying \texttt{simulation.py}.
   \item \textbf{Performance and analysis:} Idealized BDD simulations showing potential \(F_e\approx0.9990\) under realistic HCF noise; sub-\SI{1}{\micro\second} latency estimates for the DABP architecture; and secret-key rate gains \(>\!3\times\) over a small-\(d\) surface code.
 \end{enumerate}
@@ -61,13 +61,13 @@ Quantum error correction (QEC) is a natural tool to mitigate such physical error
 \section{Background and Channel Model}\label{sec:background}
 
 \subsection{Hollow-Core Fiber Coexistence Noise}
-HCF confines most modal power in air, strongly suppressing Kerr nonlinearity relative to standard fibers. Nonetheless, in quantum--classical coexistence, two mechanisms dominate:
+HCFs confine most modal power in air, strongly suppressing Kerr nonlinearity relative to standard fibers. Nonetheless, in quantum--classical coexistence, two mechanisms dominate:
 \begin{itemize}[leftmargin=*,itemsep=1pt]
-  \item \textbf{Spontaneous Raman scattering (SpRS):} Broadband spontaneous scattering of classical photons can populate the quantum band with noise photons, manifesting largely as dephasing (\(Z\)-type) events on photonic qubits.
+  \item \textbf{Spontaneous Raman scattering (SpRS):} Broadband spontaneous scattering of classical photons can populate the quantum band with noise photons. Interference with the quantum signal manifests largely as dephasing (\(Z\)-type) events on photonic qubits.
   \item \textbf{Four-wave mixing (FWM):} Parametric mixing among classical channels may generate narrowband components overlapping the quantum band.
 \end{itemize}
 
-\begin{figure}[t]
+\begin{figure}[tb]
 \centering
 \begin{tikzpicture}[scale=0.8]
   % Core (hollow)
@@ -93,14 +93,14 @@ For comparability with prior QEC studies, we first use a memoryless depolarizing
 \paragraph*{Model 2 (physics-driven): asymmetric and correlated}
 SpRS/FWM yield predominantly phase noise; we model asymmetric Pauli error probabilities with \(p_Z\!>\!p_X\). A simple photon-count-driven model
 \begin{equation}
-P(\mathrm{noise})=1-\exp[-(N_{\mathrm{SpRS}}+N_{\mathrm{FWM}})]
+P_Z^{\mathrm{base}}=1-\exp\left[-(N_{\mathrm{SpRS}}+N_{\mathrm{FWM}})\right]
 \end{equation}
-sets the scale, where \(N_{\mathrm{SpRS}}\) and \(N_{\mathrm{FWM}}\) depend on classical power, span loss (assumed \SI{0.25}{\dB\per\kilo\meter}), length (\SI{100}{\kilo\meter}), and spectral separation. This yields baseline probabilities \(p_Z^{\mathrm{base}}\approx9.0\times10^{-3}\) and \(p_X^{\mathrm{base}}\approx2.7\times10^{-3}\).
+sets the scale. \(N_{\mathrm{SpRS}}\) and \(N_{\mathrm{FWM}}\) are calculated by integrating noise generation over the fiber's effective length \(L_{\mathrm{eff}}\), depending on classical power, span loss (assumed \SI{0.25}{\dB\per\kilo\meter}), length (\SI{100}{\kilo\meter}), and spectral separation (see \texttt{simulation.py}). We model amplitude errors (\(X\)) as a fixed fraction (0.3) of phase errors, yielding baseline probabilities \(p_Z^{\mathrm{base}}\approx9.1\times10^{-3}\) and \(p_X^{\mathrm{base}}\approx2.7\times10^{-3}\).
 
-To capture burstiness, we introduce a two-state first-order Markov process (low/high noise) with persistence \(\rho=0.6\). In the low-noise state, the error probabilities are the baseline rates; in the high-noise state, these probabilities double. As implemented in \texttt{simulation.py}, the symmetric transition probabilities between states result in a steady-state occupancy of 50\% for each, leading to an effective average error rate of 1.5x the baseline. The final effective probabilities are \(p_Z^{\mathrm{eff}} \approx 1.35\times10^{-2}\) and \(p_X^{\mathrm{eff}} \approx 4.05\times10^{-3}\) (total effective \(p^{\mathrm{eff}}\approx1.76\times10^{-2}\)).
+To capture burstiness, we introduce a two-state first-order Markov process (low/high noise) with persistence \(\rho=0.6\). In the low-noise state, the error probabilities are the baseline rates; in the high-noise state, these probabilities double. As implemented in \texttt{simulation.py}, the symmetric transition probabilities result in a steady-state occupancy of 50\% for each, leading to an effective average error rate of 1.5x the baseline. The final effective probabilities are \(p_Z^{\mathrm{eff}} \approx 1.36\times10^{-2}\) and \(p_X^{\mathrm{eff}} \approx 4.08\times10^{-3}\) (total effective \(p^{\mathrm{eff}}\approx1.77\times10^{-2}\)).
 
 \paragraph*{Remark (context).}
-Model~2 reflects HCF coexistence asymmetry and temporal structure, and serves as our primary evaluation setting.
+Model 2 reflects HCF coexistence asymmetry and temporal structure, and serves as our primary evaluation setting.
 
 \pgfplotstableread[col sep=comma]{ag-qec/data/ag_qec_results.csv}\results
 \newcommand{\getvalue}[1]{\pgfplotstablegetelem{0}{#1}\of{\results}\pgfplotsretval}
@@ -124,9 +124,9 @@ We construct a pair of nested classical AG codes over an extension field and tak
 Dimension consistency is achieved with \(\mathrm{rank}(H_X)=\mathrm{rank}(H_Z)=111\), so \(\mathrm{rank}(H_X)+\mathrm{rank}(H_Z)=222=n-k\).
 
 \subsection{Pipeline Belief-Propagation Decoder (DABP)}\label{sec:implementation}
-We propose a fully unrolled, deeply pipelined min-sum BP decoder architecture with 6-bit LLRs. Check-node and variable-node updates are separated by pipeline registers to maximize \(f_\mathrm{clk}\) (Fig.~\ref{fig:fpga}, Algo.~\ref{algo:dabp}). At \SI{200}{\mega\hertz}, ten iterations complete in \(\sim\)\SI{100}{\nano\second}, with total per-codeword latency \(\sim\)\SI{0.32}{\micro\second} including I/O.
+We propose a fully unrolled, deeply pipelined min-sum BP decoder architecture with 6-bit LLRs. Check-node and variable-node updates are separated by pipeline registers to maximize \(f_\mathrm{clk}\) (Fig.~\ref{fig:fpga}, Algo.~\ref{algo:dabp}). At \SI{200}{\mega\hertz}, ten iterations complete in \(\sim\)\SI{100}{\nano\second}, with total per-codeword latency \(\sim\)\SI{0.32}{\micro\second} including I/O. The 6-bit quantization strikes a balance between minimizing hardware complexity (LUTs and routing) and maintaining decoding performance close to floating-point implementations.
 
-\begin{algorithm}[t]
+\begin{algorithm}[tb]
 \DontPrintSemicolon
 \caption{DABP decoding (shown for \(Z\)-channel; \(X\) analogous)}\label{algo:dabp}
 \textbf{Inputs:} syndrome \(s\), prior LLRs \(L_j\); Tanner graph neighborhoods \(N(i),N(j)\).\\
@@ -142,7 +142,7 @@ Initialize messages \(M_{i\to j}^{(0)}\gets 0\), iteration \(t\gets0\).\;
 \textbf{Output:} correction \(\hat e\).\;
 \end{algorithm}
 
-\begin{figure}[t]
+\begin{figure}[tb]
 \centering
 \begin{tikzpicture}[block/.style={draw, rectangle, minimum height=1.2cm, minimum width=2.6cm, align=center, fill=gray!10},reg/.style={draw, rectangle, minimum height=0.5cm, minimum width=0.8cm, align=center, fill=gray!20}]
   \node[block] (cnu) {Check Node Processing\\(parallel)};
@@ -159,7 +159,7 @@ Initialize messages \(M_{i\to j}^{(0)}\gets 0\), iteration \(t\gets0\).\;
 \label{fig:fpga}
 \end{figure}
 
-\begin{table}[t]
+\begin{table}[tb]
 \centering
 \caption{Estimated FPGA resources for DABP (Xilinx Kintex UltraScale XCKU040).}
 \label{tab:resources}
@@ -187,18 +187,18 @@ Let \(P_L\) denote the total logical error probability; then \(F_e \ge 1-P_L\), 
 P_L^{(Z)} \le \exp\!\Big\{-n\, \KL\!\Big(\tfrac{t+1}{n}\,\Big\Vert\, p_Z\Big)\Big\},\label{eq:ldp}
 \end{equation}
 where \(\KL(a\Vert b)\) is the Kullback--Leibler divergence.
-Evaluating at \(n=255\), \(t=10\), using the effective average rates under Model 2 (\(p_Z^{\mathrm{eff}}\approx1.35\times10^{-2}\), \(p_X^{\mathrm{eff}}\approx4.05\times10^{-3}\)) yields
-\(P_L^{(Z)} \lesssim 4.9\times10^{-3}\), \(P_L^{(X)} \lesssim 9.0\times10^{-8}\), hence \(F_e \gtrsim 0.9951\).
+Evaluating at \(n=255\), \(t=10\), using the effective average rates under Model 2 (\(p_Z^{\mathrm{eff}}\approx1.36\times10^{-2}\), \(p_X^{\mathrm{eff}}\approx4.08\times10^{-3}\)) yields
+\(P_L^{(Z)} \lesssim 5.0\times10^{-3}\), \(P_L^{(X)} \lesssim 4.8\times10^{-9}\), hence \(F_e \gtrsim 0.9950\).
 This bound assumes i.i.d. errors at the average rate and is therefore loose; the simulations below provide tighter estimates capturing the correlation structure.
 
 \subsection{Numerical Performance}\label{sec:comparison}
 
-To evaluate the error-correction potential of the proposed codes, we perform Monte Carlo simulations using the models described in Section~\ref{sec:noise_models}. \textbf{It is critical to note that all performance results presented here are based on an idealized Bounded Distance Decoder (BDD)}, as implemented in \texttt{simulation.py}. BDD assumes perfect correction if the number of physical errors is within the code's designed threshold \(t\), and failure otherwise. This provides a theoretical upper bound on performance; the practical performance of the proposed DABP (Belief Propagation) decoder will be lower and is a subject for future work.
+To evaluate the error-correction potential of the proposed codes, we perform Monte Carlo simulations using the models described in Section~\ref{sec:noise_models}. \textbf{It is critical to note that all fidelity results (\(F_e\), \(P_L\)) presented here are based on an idealized Bounded Distance Decoder (BDD)}, as implemented in \texttt{simulation.py}. BDD assumes perfect correction if the number of physical errors is within the code's designed threshold \(t\), and failure otherwise. This provides a theoretical upper bound on performance. The proposed DABP architecture implements a BP algorithm; its practical performance will likely be lower than the BDD estimate and is the subject of future work.
 
 \subsubsection{Idealized Depolarizing Noise (Model 1)}
 Results under \(p=0.03\) i.i.d. depolarizing noise (\(10^4\) trials) are summarized in Table~\ref{tab:perf_idealized}.
 
-\begin{table*}[t]
+\begin{table*}[tb]
 \centering
 \caption{Performance under Model 1 (depolarizing \(p=0.03\), i.i.d.).\textsuperscript{a}}
 \label{tab:perf_idealized}
@@ -217,9 +217,9 @@ CSS LDPC (high distance) & $[[256,128,20]]$ & 0.50 & \(\sim 1.2\times 10^{-4}\) 
 \end{table*}
 
 \subsubsection{Physics-Driven Asymmetric, Correlated Noise (Model 2)}\label{sec:realistic}
-Under Model 2 (effective average rates \(p_Z^{\mathrm{eff}}\approx1.35\times10^{-2}\), \(p_X^{\mathrm{eff}}\approx4.05\times10^{-3}\), and \(\rho=0.6\)), BDD Monte Carlo simulation with \(5\times10^4\) trials yields the results in Table~\ref{tab:perf_realistic}.
+Under Model 2 (effective average rates \(p_Z^{\mathrm{eff}}\approx1.36\times10^{-2}\), \(p_X^{\mathrm{eff}}\approx4.08\times10^{-3}\), and \(\rho=0.6\)), BDD Monte Carlo simulation with \(5\times10^4\) trials yields the results in Table~\ref{tab:perf_realistic}.
 
-\begin{table*}[t]
+\begin{table*}[tb]
 \centering
 \caption{Performance under Model 2 (asymmetric, correlated; effective \(p^{\mathrm{eff}}\approx\num[round-mode=places,round-precision=2]{\getvalue{p_eff}}\)).\textsuperscript{b}}
 \label{tab:perf_realistic}
@@ -237,16 +237,18 @@ CSS LDPC (high distance) & $[[256,128,20]]$ & 0.50 & \(2.8\times 10^{-3}\) & 0.9
 \textsuperscript{b}{\footnotesize Fidelity estimates ($P_L$, $F_e$) assume idealized decoding (BDD for AG/LDPC codes, MWPM for surface codes). Latency refers to the specific hardware decoder architecture proposed or estimated for each code.}
 \end{table*}
 
-Despite the relatively high effective physical error rate (\(p^{\mathrm{eff}}\approx1.76\%\)), correlated bursts degrade moderate-distance LDPC performance markedly, while the proposed AG code sustains high potential \(F_e\) at higher rate and lower latency.
+It is noteworthy that some codes (e.g., Surface code $d=11$) exhibit lower fidelity under Model 2 than Model 1 (Table~\ref{tab:perf_idealized}), despite Model 2 having a lower average physical error rate ($p^{\mathrm{eff}}\approx1.77\%$) than Model 1 ($p=3\%$). This highlights the detrimental impact of correlated noise (burstiness); temporally concentrated errors can more easily exceed the correction threshold than the same average number of errors distributed uniformly (i.i.d.).
+
+The proposed AG code sustains high potential \(F_e\) at higher rate and lower latency, demonstrating robustness to this realistic HCF noise profile.
 
 \section{Secret-Key Rate Implications}\label{sec:finitekey}
 For entanglement-based QKD, the asymptotic secret fraction per logical qubit is \(r_\infty=1-2H_2(Q)\), where \(Q=(1-F_e)/2\) is the logical QBER. Using Model~2 results (Table~\ref{tab:perf_realistic}):
 
 \paragraph*{AG code (\( [[255,33,21]] \)).}
-With \(F_e\approx0.9990\), \(Q\approx5.0\times10^{-4}\), giving \(r_\infty\approx0.994\). Per physical qubit: \(r_\infty\cdot (k/n)\approx 0.994\times(33/255)\approx 0.1287\).
+With \(F_e\approx0.9990\), \(Q\approx5.2\times10^{-4}\), giving \(r_\infty\approx0.9872\). Per physical qubit: \(r_\infty\cdot (k/n)\approx 0.9872\times(33/255)\approx 0.1277\).
 
-\paragraph*{Surface code (\(d=5\)).}
-With \(F_e\approx0.9958\), \(Q\approx2.1\times10^{-3}\), hence \(r_\infty\approx0.966\); per physical qubit \(0.966/25=0.0386\). The AG code thus yields \(\approx3.34\times\) higher key per physical qubit.
+\paragraph*{Surface code (\(d=5\), \([[25,1,5]]\)).}
+With \(F_e\approx0.9958\), \(Q\approx2.1\times10^{-3}\), hence \(r_\infty\approx0.9566\); per physical qubit \(0.9566/25=0.0383\). The AG code thus yields \(\approx3.34\times\) higher key per physical qubit.
 
 Finite-size corrections give, for \(N\) pairs and security parameters \((\epsilon_{\mathrm{sec}},\epsilon_{\mathrm{cor}})\),
 \begin{equation}
